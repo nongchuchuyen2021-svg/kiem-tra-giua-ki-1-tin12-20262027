@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AlertTriangle } from "lucide-react";
 import Toolbar from "./components/Toolbar";
 import ResultsBanner from "./components/ResultsBanner";
 import TabsNav from "./components/TabsNav";
@@ -17,6 +18,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("mcq");
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showTabSwitchNotice, setShowTabSwitchNotice] = useState(false);
   const [scores, setScores] = useState({ mcq: 0, tf: 0, total: 0 });
   const [history, setHistory] = useState(() => loadResultHistory());
 
@@ -132,6 +134,33 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [examEndTime, isSubmitted]);
 
+  // Chống rời trang tra cứu AI: khi học sinh chuyển sang tab/ứng dụng khác
+  // rồi quay lại trong lúc đang làm bài, tự động đổi sang một bộ câu hỏi
+  // mới và xoá hết đáp án đã chọn. Đồng hồ đếm ngược KHÔNG bị ảnh hưởng
+  // (vẫn tính theo Date.now() ở effect phía trên) nên không có lợi ích gì
+  // về mặt thời gian khi rời trang.
+  useEffect(() => {
+    if (isSubmitted) return undefined;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState !== "visible") return;
+      setQuizData(generateQuiz());
+      setMcqAnswers({});
+      setTfAnswers({});
+      setEssayAnswers({});
+      setActiveTab("mcq");
+      setShowConfirmModal(false);
+      setShowTabSwitchNotice(true);
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibilityChange,
+      );
+  }, [isSubmitted]);
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans pb-12">
       <div className="bg-gradient-to-br from-blue-700 via-blue-600 to-indigo-800 text-white py-12 px-4 shadow-inner relative overflow-hidden">
@@ -160,6 +189,39 @@ export default function App() {
       />
 
       <main className="max-w-5xl mx-auto px-4 mt-6">
+        {!isSubmitted && (
+          <div className="bg-amber-50 border-l-4 border-amber-500 p-3 rounded text-sm text-amber-800 mb-6 flex items-start gap-2">
+            <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <span>
+              <strong>Lưu ý:</strong> Nếu chuyển sang tab hoặc ứng dụng khác
+              trong lúc làm bài (ví dụ để tra cứu AI), hệ thống sẽ tự động đổi
+              sang một bộ câu hỏi mới và xoá đáp án đã chọn khi quay lại.
+              Đồng hồ đếm giờ không dừng lại.
+            </span>
+          </div>
+        )}
+
+        {showTabSwitchNotice && !isSubmitted && (
+          <div className="bg-red-50 border border-red-300 rounded-xl p-4 mb-6 shadow-sm flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-red-800 font-semibold text-sm">
+                Đã phát hiện bạn rời khỏi trang làm bài.
+              </p>
+              <p className="text-red-700 text-sm mt-0.5">
+                Đề đã được đổi sang bộ câu hỏi mới và đáp án đã chọn trước đó
+                đã bị xoá. Đồng hồ vẫn tiếp tục chạy.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowTabSwitchNotice(false)}
+              className="text-red-600 hover:text-red-800 font-bold text-sm flex-shrink-0"
+            >
+              Đã hiểu
+            </button>
+          </div>
+        )}
+
         {isSubmitted && (
           <ResultsBanner
             studentInfo={studentInfo}
