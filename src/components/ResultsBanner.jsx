@@ -1,4 +1,27 @@
-export default function ResultsBanner({ studentInfo, scores, history }) {
+import { CheckCircle2, Loader2, WifiOff } from "lucide-react";
+
+const SYNC_STATUS_DISPLAY = {
+  sending: {
+    icon: Loader2,
+    spin: true,
+    className: "bg-blue-50 border-blue-200 text-blue-700",
+    text: "Đang gửi kết quả cho giáo viên...",
+  },
+  sent: {
+    icon: CheckCircle2,
+    className: "bg-green-50 border-green-200 text-green-700",
+    text: "Đã gửi kết quả cho giáo viên (Google Sheet).",
+  },
+  queued: {
+    icon: WifiOff,
+    className: "bg-amber-50 border-amber-200 text-amber-700",
+    text: "Chưa gửi được do mất mạng - sẽ tự động gửi lại khi có mạng. Kết quả vẫn được lưu trên máy này.",
+  },
+};
+
+export default function ResultsBanner({ studentInfo, scores, history, syncStatus }) {
+  const syncDisplay = SYNC_STATUS_DISPLAY[syncStatus];
+
   return (
     <div className="bg-green-50 border border-green-200 rounded-xl p-6 mb-6 shadow-sm text-center">
       <h2 className="text-2xl font-bold text-green-800 mb-2">Đã nộp bài!</h2>
@@ -6,6 +29,17 @@ export default function ResultsBanner({ studentInfo, scores, history }) {
         Học sinh: <span className="font-bold">{studentInfo.name}</span> - Lớp:{" "}
         <span className="font-bold">{studentInfo.class}</span>
       </p>
+
+      {syncDisplay && (
+        <div
+          className={`flex items-center justify-center gap-2 text-sm font-medium border rounded-lg py-2 px-3 mb-4 ${syncDisplay.className}`}
+        >
+          <syncDisplay.icon
+            className={`w-4 h-4 flex-shrink-0 ${syncDisplay.spin ? "animate-spin" : ""}`}
+          />
+          <span>{syncDisplay.text}</span>
+        </div>
+      )}
       <div className="flex flex-wrap justify-center gap-6">
         <div className="bg-white px-6 py-3 rounded-lg shadow-sm border border-green-100">
           <p className="text-sm text-gray-500 font-medium">

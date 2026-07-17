@@ -10,6 +10,7 @@ import ConfirmModal from "./components/ConfirmModal";
 import { generateQuiz } from "./utils/shuffle";
 import { calculateScore } from "./utils/scoring";
 import { loadResultHistory, saveResultToHistory } from "./utils/resultHistory";
+import { sendResultToSheet, flushQueuedResults } from "./utils/sheetSync";
 
 const EXAM_DURATION_MS = 45 * 60 * 1000;
 
@@ -21,6 +22,7 @@ export default function App() {
   const [showTabSwitchNotice, setShowTabSwitchNotice] = useState(false);
   const [scores, setScores] = useState({ mcq: 0, tf: 0, total: 0 });
   const [history, setHistory] = useState(() => loadResultHistory());
+  const [sheetSyncStatus, setSheetSyncStatus] = useState("idle");
 
   const [quizData, setQuizData] = useState(() => generateQuiz());
   const [mcqAnswers, setMcqAnswers] = useState({});
@@ -51,7 +53,7 @@ export default function App() {
     setEssayAnswers((prev) => ({ ...prev, [qId]: text }));
   };
 
-  const executeSubmit = (submitName, submitClass) => {
+  const executeSubmit = async (submitName, submitClass) => {
     const currentScores = calculateScore(quizData, mcqAnswers, tfAnswers);
     setScores(currentScores);
     setShowConfirmModal(false);
@@ -59,14 +61,26 @@ export default function App() {
     setActiveTab("mcq");
     window.scrollTo({ top: 0, behavior: "smooth" });
 
-    saveResultToHistory({
+    const resultData = {
       name: submitName,
       class: submitClass,
       mcqScore: currentScores.mcq,
       tfScore: currentScores.tf,
       totalScore: currentScores.total,
-    });
+    };
+
+    saveResultToHistory(resultData);
     setHistory(loadResultHistory());
+
+    setSheetSyncStatus("sending");
+    const status = await sendResultToSheet({
+      ...resultData,
+      essayAnswers: quizData.essay.map((q) => ({
+        question: q.text,
+        answer: essayAnswers[q.id] || "",
+      })),
+    });
+    setSheetSyncStatus(status);
   };
 
   const handleForceSubmit = () => {
@@ -101,6 +115,7 @@ export default function App() {
     setTfAnswers({});
     setEssayAnswers({});
     setScores({ mcq: 0, tf: 0, total: 0 });
+    setSheetSyncStatus("idle");
     setQuizData(generateQuiz());
     setExamEndTime(Date.now() + EXAM_DURATION_MS);
     setTimeLeft(EXAM_DURATION_MS / 1000);
@@ -160,6 +175,14 @@ export default function App() {
         handleVisibilityChange,
       );
   }, [isSubmitted]);
+
+  // Gửi lại các kết quả chưa lên được Google Sheet (do mất mạng lúc nộp
+  // bài) - thử ngay khi mở trang và mỗi khi trình duyệt báo có mạng trở lại.
+  useEffect(() => {
+    flushQueuedResults();
+    window.addEventListener("online", flushQueuedResults);
+    return () => window.removeEventListener("online", flushQueuedResults);
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans pb-12">
@@ -227,6 +250,7 @@ export default function App() {
             studentInfo={studentInfo}
             scores={scores}
             history={history}
+            syncStatus={sheetSyncStatus}
           />
         )}
 
