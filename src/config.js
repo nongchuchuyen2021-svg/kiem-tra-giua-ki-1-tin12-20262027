@@ -2,4 +2,5 @@
 // (xem hướng dẫn ở README-google-sheet.md). Để trống ("") nếu chưa thiết
 // lập - ứng dụng vẫn chạy bình thường, chỉ là kết quả sẽ không được gửi
 // lên Google Sheet, vẫn được lưu ở lịch sử localStorage như cũ.
-export const GOOGLE_SHEET_WEBAPP_URL = "";
+export const GOOGLE_SHEET_WEBAPP_URL =
+  "https://script.google.com/macros/s/AKfycbyjdYHAYl2YoewXBxXQEELlFxCC7EN161ohoDbNVveqcuf-_Ut6a1sO6wg--JBbMwqb/exec";
