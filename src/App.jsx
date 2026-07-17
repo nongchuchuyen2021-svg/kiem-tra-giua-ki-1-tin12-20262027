@@ -30,9 +30,9 @@ export default function App() {
   const [essayAnswers, setEssayAnswers] = useState({});
 
   // Mốc thời gian kết thúc bài (thời gian thực), không phải bộ đếm số tick.
-  const [examEndTime, setExamEndTime] = useState(
-    () => Date.now() + EXAM_DURATION_MS,
-  );
+  // Chỉ set một lần khi vào bài - bài kiểm tra chỉ làm và nộp một lần duy
+  // nhất, không có tính năng làm lại.
+  const [examEndTime] = useState(() => Date.now() + EXAM_DURATION_MS);
   const [timeLeft, setTimeLeft] = useState(EXAM_DURATION_MS / 1000);
 
   const handleMcqChange = (qId, option) => {
@@ -100,26 +100,6 @@ export default function App() {
 
   const confirmSubmit = () => {
     executeSubmit(studentInfo.name, studentInfo.class);
-  };
-
-  const handleReset = () => {
-    if (
-      !window.confirm(
-        "Em có chắc chắn muốn xóa hết kết quả và làm lại từ đầu không?",
-      )
-    ) {
-      return;
-    }
-    setIsSubmitted(false);
-    setMcqAnswers({});
-    setTfAnswers({});
-    setEssayAnswers({});
-    setScores({ mcq: 0, tf: 0, total: 0 });
-    setSheetSyncStatus("idle");
-    setQuizData(generateQuiz());
-    setExamEndTime(Date.now() + EXAM_DURATION_MS);
-    setTimeLeft(EXAM_DURATION_MS / 1000);
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Đếm ngược theo mốc thời gian thực: mỗi lần tick (hoặc khi tab được mở
@@ -208,7 +188,6 @@ export default function App() {
         timeLeft={timeLeft}
         isSubmitted={isSubmitted}
         onSubmit={handleSubmit}
-        onReset={handleReset}
       />
 
       <main className="max-w-5xl mx-auto px-4 mt-6">

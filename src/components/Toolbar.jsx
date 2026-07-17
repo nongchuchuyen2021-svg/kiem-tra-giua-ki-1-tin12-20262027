@@ -1,4 +1,4 @@
-import { Clock, User, BookOpen, CheckCircle2, RotateCcw } from "lucide-react";
+import { Clock, User, BookOpen, CheckCircle2 } from "lucide-react";
 import { formatTime } from "../utils/format";
 
 export default function Toolbar({
@@ -7,7 +7,6 @@ export default function Toolbar({
   timeLeft,
   isSubmitted,
   onSubmit,
-  onReset,
 }) {
   return (
     <header className="bg-white/80 backdrop-blur-md shadow-sm relative border-b border-gray-200">
@@ -53,13 +52,9 @@ export default function Toolbar({
             </button>
 
             {isSubmitted && (
-              <button
-                onClick={onReset}
-                className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-lg transition-all shadow-md font-bold whitespace-nowrap flex-shrink-0"
-              >
-                <RotateCcw className="w-5 h-5" />
-                <span>Làm lại bài</span>
-              </button>
+              <span className="text-xs text-gray-400 italic whitespace-nowrap">
+                Học sinh tiếp theo dùng máy này: tải lại trang (F5)
+              </span>
             )}
           </div>
         </div>

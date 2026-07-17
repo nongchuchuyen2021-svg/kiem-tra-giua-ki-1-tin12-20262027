@@ -31,4 +31,16 @@
 
 ## Lưu ý khi sửa lại script sau này
 
-Nếu bạn (hoặc mình) sửa lại nội dung file `.gs` sau khi đã deploy, phải tạo **bản triển khai mới**: Deploy → Manage deployments → biểu tượng bút chì → chọn "New version" → Deploy, thì thay đổi mới có hiệu lực (sửa code không tự động áp dụng cho URL cũ).
+Nếu bạn (hoặc mình) sửa lại nội dung file `.gs` sau khi đã deploy, phải tạo **bản triển khai mới** thì thay đổi mới có hiệu lực (sửa code trong trình soạn thảo không tự áp dụng ngay cho URL đang chạy):
+
+1. Trong tab Apps Script, dán đè code mới vào, Ctrl+S để lưu.
+2. Góc trên bên phải, bấm **Deploy → Manage deployments** (Quản lý bản triển khai).
+3. Bấm biểu tượng **bút chì (Edit)** ở bản triển khai hiện có.
+4. Ở mục **Version**, chọn **"New version"**.
+5. Bấm **Deploy**.
+
+Làm theo đúng 5 bước này thì **URL Web App giữ nguyên như cũ**, không cần đổi gì trong code của web.
+
+## Ghi chú: dòng tiêu đề Sheet
+
+Script đã tự động thêm dòng tiêu đề (Thời gian, Họ và tên, Lớp...) vào dòng 1 nếu Sheet đang hoàn toàn trống khi có bài nộp đầu tiên. Nếu Sheet đã có dữ liệu từ trước, bạn tự thêm dòng tiêu đề đó vào dòng 1 cho khớp.

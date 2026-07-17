@@ -1,4 +1,4 @@
-import { GOOGLE_SHEET_WEBAPP_URL } from "../config";
+import { GOOGLE_SHEET_WEBAPP_URL, SHEET_SYNC_SECRET } from "../config";
 
 // Hàng đợi các kết quả chưa gửi được lên Google Sheet (mất mạng, WiFi
 // phòng máy chập chờn...) - lưu tạm vào localStorage để tự động gửi lại
@@ -35,7 +35,7 @@ const postToSheet = async (payload) => {
       method: "POST",
       mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ ...payload, secret: SHEET_SYNC_SECRET }),
     });
     return true;
   } catch {
