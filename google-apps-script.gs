@@ -14,6 +14,17 @@ var HEADER_ROW = [
   "Bài tự luận",
 ];
 
+function ensureHeaderRow(sheet) {
+  // Kiểm tra trực tiếp ô A1 thay vì dựa vào "Sheet có trống hay không" -
+  // cách này chắc chắn hơn, hoạt động đúng dù Sheet còn sót định dạng/dữ
+  // liệu cũ ở đâu đó khiến getLastRow() không trả về 0 như mong đợi.
+  var firstCell = sheet.getRange(1, 1).getValue();
+  if (firstCell !== HEADER_ROW[0]) {
+    sheet.insertRowBefore(1);
+    sheet.getRange(1, 1, 1, HEADER_ROW.length).setValues([HEADER_ROW]);
+  }
+}
+
 function doPost(e) {
   var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   var data = JSON.parse(e.postData.contents);
@@ -24,9 +35,7 @@ function doPost(e) {
     ).setMimeType(ContentService.MimeType.JSON);
   }
 
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(HEADER_ROW);
-  }
+  ensureHeaderRow(sheet);
 
   var essayText = (data.essayAnswers || [])
     .map(function (item, i) {
